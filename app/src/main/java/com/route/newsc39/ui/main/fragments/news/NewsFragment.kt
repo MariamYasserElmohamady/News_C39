@@ -6,6 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.google.gson.Gson
@@ -20,14 +22,7 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class NewsFragment(val categoryId: String): Fragment(), OnTabSelectedListener {
-
-    companion object{
-//        fun getInstance(category: Category): NewsFragment{
-//            val newsFragment = NewsFragment()
-//            newsFragment.category = category
-//            return newsFragment
-//        }
-    }
+    lateinit var viewModel: NewsFragmentViewModel
     lateinit var binding: FragmentNewsBinding
     var adapter = ArticlesAdapter(listOf())
 
@@ -36,58 +31,44 @@ class NewsFragment(val categoryId: String): Fragment(), OnTabSelectedListener {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        viewModel = ViewModelProvider(this)[NewsFragmentViewModel::class.java]
         binding = FragmentNewsBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        loadSources()
+        viewModel.loadSources(categoryId)
         initListeners()
         binding.articlesRecyclerView.adapter = adapter
+        observeToLiveData()
+    }
+
+    private fun observeToLiveData() {
+        viewModel.sourcesListLiveData.observe(viewLifecycleOwner) {
+            showTabs(it!!)
+        }
+        viewModel.isLoadingLiveData.observe(viewLifecycleOwner){
+            changeLoaderVisiblity(it)
+        }
+        viewModel.errorMessageLiveData.observe(viewLifecycleOwner){
+            if(it.isEmpty()){
+                changeErrorVisiblity(false)
+            }else {
+                changeErrorVisiblity(true, it)
+            }
+        }
+        viewModel.articlesListLiveData.observe(viewLifecycleOwner){
+            adapter.update(it!!)
+        }
+
     }
 
     private fun initListeners() {
         binding.errorView.retryBtn.setOnClickListener {
-            loadSources()
+            viewModel.loadSources(categoryId)
         }
         binding.tabLayout.addOnTabSelectedListener(this)
-    }
-
-    private fun loadSources() {
-        changeLoaderVisiblity(true)
-        changeErrorVisiblity(false)
-        ApiManager.getWebServices().getSources(ApiManager.apiKey, categoryId)
-            .enqueue(object : Callback<SourcesResponse> {
-                override fun onResponse(
-                    call: Call<SourcesResponse>,
-                    response: Response<SourcesResponse>
-                ) {
-                    changeLoaderVisiblity(false)
-                    if (response.isSuccessful) {
-                        response.body()?.sources.let {
-                            showTabs(it!!)
-                        }
-
-                    } else {
-                        changeErrorVisiblity(true)
-                        val response =
-                            Gson().fromJson(
-                                response.errorBody()?.string(),
-                                SourcesResponse::class.java
-                            )
-                        changeErrorVisiblity(true, response.message ?: "Try again later")
-                    }
-                }
-
-                override fun onFailure(call: Call<SourcesResponse>, t: Throwable) {
-                    changeLoaderVisiblity(false)
-                    changeErrorVisiblity(
-                        true,
-                        t.localizedMessage ?: "Something went wrong please try again later"
-                    )
-                }
-            })
     }
 
     private fun showTabs(sources: List<Source?>) {
@@ -115,7 +96,7 @@ class NewsFragment(val categoryId: String): Fragment(), OnTabSelectedListener {
     override fun onTabSelected(tab: TabLayout.Tab?) {
         val source = tab?.tag as Source?
         source?.id?.let {
-            loadArticles(it)
+            viewModel.loadArticles(it)
         }
     }
 
@@ -124,38 +105,7 @@ class NewsFragment(val categoryId: String): Fragment(), OnTabSelectedListener {
     override fun onTabReselected(tab: TabLayout.Tab?) {
         val source = tab?.tag as Source
         source.id?.let {
-            loadArticles(it)
+            viewModel.loadArticles(it)
         }
-    }
-
-    private fun loadArticles(sourceId: String) {
-        ApiManager.getWebServices().getArticles(
-            ApiManager.apiKey,
-            sourceId
-        ).enqueue(object : Callback<ArticlesResponse> {
-            override fun onResponse(
-                call: Call<ArticlesResponse>,
-                response: Response<ArticlesResponse>
-            ) {
-                if (response.isSuccessful && response.body()?.articles?.isNotEmpty() == true) {
-                    adapter.update(response.body()?.articles!!)
-                } else {
-                    changeErrorVisiblity(true)
-                    val response =
-                        Gson().fromJson(
-                            response.errorBody()?.string(),
-                            ArticlesResponse::class.java
-                        )
-                    changeErrorVisiblity(true, response.message ?: "Try again later")
-                }
-            }
-            override fun onFailure(call: Call<ArticlesResponse>, t: Throwable) {
-                changeLoaderVisiblity(false)
-                changeErrorVisiblity(
-                    true,
-                    t.localizedMessage ?: "Something went wrong please try again later"
-                )
-            }
-        })
     }
 }
