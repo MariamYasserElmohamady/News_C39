@@ -2,13 +2,13 @@ package com.route.newsc39.ui.main
 
 import android.os.Bundle
 import android.view.MenuItem
-import android.view.View
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.drawerlayout.widget.DrawerLayout.DrawerListener
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import com.route.newsc39.R
 import com.route.newsc39.databinding.ActivityMainBinding
+
 import com.route.newsc39.ui.main.fragments.categories.CategoriesFragment
 import com.route.newsc39.ui.main.fragments.news.NewsFragment
 import com.route.newsc39.ui.main.fragments.settings.SettingsFragment
@@ -22,16 +22,15 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         setSupportActionBar(binding.mainToolBar)
         // init action bar drawer toggle
         actionBarDrawerToggle = ActionBarDrawerToggle(
-            this, binding.root,
+            this, binding.drawerLayout,
             R.string.drawer_open, R.string.drawer_close
         )
         // add a drawer listener into  drawer layout
-        binding.root.addDrawerListener(actionBarDrawerToggle)
+        binding.drawerLayout.addDrawerListener(actionBarDrawerToggle)
         actionBarDrawerToggle.syncState()
 
         // show menu icon and back icon while drawer open
@@ -50,7 +49,7 @@ class MainActivity : AppCompatActivity() {
                     showFragment(categoriesFragment)
                 }
             }
-            binding.root.closeDrawers()
+            binding.drawerLayout.closeDrawers()
             return@setNavigationItemSelectedListener true
         }
     }

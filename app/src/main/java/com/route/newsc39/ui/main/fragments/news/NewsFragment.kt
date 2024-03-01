@@ -17,6 +17,7 @@ import com.route.newsc39.api.model.Source
 import com.route.newsc39.api.model.SourcesResponse
 import com.route.newsc39.databinding.FragmentNewsBinding
 import com.route.newsc39.ui.main.fragments.adapters.ArticlesAdapter
+import okhttp3.internal.notifyAll
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -33,6 +34,7 @@ class NewsFragment(val categoryId: String): Fragment(), OnTabSelectedListener {
     ): View {
         viewModel = ViewModelProvider(this)[NewsFragmentViewModel::class.java]
         binding = FragmentNewsBinding.inflate(inflater, container, false)
+        binding.viewModel = viewModel
         return binding.root
     }
 
@@ -48,9 +50,7 @@ class NewsFragment(val categoryId: String): Fragment(), OnTabSelectedListener {
         viewModel.sourcesListLiveData.observe(viewLifecycleOwner) {
             showTabs(it!!)
         }
-        viewModel.isLoadingLiveData.observe(viewLifecycleOwner){
-            changeLoaderVisiblity(it)
-        }
+
         viewModel.errorMessageLiveData.observe(viewLifecycleOwner){
             if(it.isEmpty()){
                 changeErrorVisiblity(false)
@@ -58,6 +58,7 @@ class NewsFragment(val categoryId: String): Fragment(), OnTabSelectedListener {
                 changeErrorVisiblity(true, it)
             }
         }
+
         viewModel.articlesListLiveData.observe(viewLifecycleOwner){
             adapter.update(it!!)
         }
@@ -85,14 +86,10 @@ class NewsFragment(val categoryId: String): Fragment(), OnTabSelectedListener {
     private fun changeErrorVisiblity(isVisible: Boolean, message: String = "") {
         binding.errorView.root.isVisible = isVisible
         if (isVisible) {
+            binding.articlesRecyclerView.isVisible = false
             binding.errorView.errorTv.text = message
         }
     }
-
-    private fun changeLoaderVisiblity(isVisible: Boolean) {
-        binding.loadingView.isVisible = isVisible
-    }
-
     override fun onTabSelected(tab: TabLayout.Tab?) {
         val source = tab?.tag as Source?
         source?.id?.let {

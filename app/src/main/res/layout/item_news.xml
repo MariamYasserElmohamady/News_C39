@@ -1,39 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_margin="12dp"
-    android:orientation="vertical">
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <com.google.android.material.imageview.ShapeableImageView
-        android:id="@+id/newsImage"
+    <data>
+        <variable
+            name="article"
+            type="com.route.newsc39.api.model.Article" />
+    </data>
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="220dp"
-        android:scaleType="fitXY"
-        app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSize50Percent"
-        tools:src="@tools:sample/backgrounds/scenic" />
-
-    <TextView
-        android:id="@+id/newsSourceTv"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_margin="12dp"
+        android:orientation="vertical">
 
-        />
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/newsImage"
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:scaleType="fitXY"
+            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSize50Percent"
+            tools:src="@tools:sample/backgrounds/scenic"
+            imageUrl="@{article.urlToImage}"
+            />
 
-    <TextView
-        android:id="@+id/newsTitleTv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        <TextView
+            android:id="@+id/newsSourceTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{article.author}"
+            />
 
-        />
+        <TextView
+            android:id="@+id/newsTitleTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{article.title}"
+            />
 
-    <TextView
-        android:id="@+id/newsDateTv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        <TextView
+            android:id="@+id/newsDateTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{article.publishedAt}"
+            />
 
-        />
-
-</LinearLayout>
+    </LinearLayout>
+</layout>
