@@ -40,6 +40,7 @@ class NewsFragment(val categoryId: String): Fragment(), OnTabSelectedListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.lifecycleOwner = this
         viewModel.loadSources(categoryId)
         initListeners()
         binding.articlesRecyclerView.adapter = adapter

@@ -4,13 +4,19 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.gson.Gson
 import com.route.newsc39.api.ApiManager
 import com.route.newsc39.api.model.Article
 import com.route.newsc39.api.model.Source
+import com.route.newsc39.data.database.MyDataBase
+import com.route.newsc39.data.repos.news_repo.NewsRepo
+import com.route.newsc39.data.repos.news_repo.NewsRepoImpl
+import com.route.newsc39.data.repos.news_repo.data_sources.local_data_source.LocalDataSourceImpl
+import com.route.newsc39.data.repos.news_repo.data_sources.remote_data_source.RemoteDataSourceImpl
 import kotlinx.coroutines.launch
 
 class NewsFragmentViewModel : ViewModel() {
+    val newsRepo: NewsRepo = NewsRepoImpl(RemoteDataSourceImpl(), LocalDataSourceImpl(
+        MyDataBase.getInstance()))
     val sourcesListLiveData: MutableLiveData<List<Source?>?> = MutableLiveData();
     val isLoadingLiveData: MutableLiveData<Boolean> = MutableLiveData(false);
     val errorMessageLiveData: MutableLiveData<String> = MutableLiveData("");
@@ -23,11 +29,11 @@ class NewsFragmentViewModel : ViewModel() {
             errorMessageLiveData.value = ""
             Log.e("NewsFragmentViewModel","24-  isLoadingLiveData.value = true")
             try {
-                val sourcesResponse =
-                    ApiManager.getWebServices().getSources(ApiManager.apiKey, categoryId)
+                val sourcesList =
+                    newsRepo.loadSources(ApiManager.apiKey,categoryId)
                 isLoadingLiveData.value = false
                 Log.e("NewsFragmentViewModel","29-  isLoadingLiveData.value = false")
-                sourcesListLiveData.value = sourcesResponse.sources
+                sourcesListLiveData.value = sourcesList
             } catch (e: Exception) {
                 isLoadingLiveData.value = false
                 Log.e("NewsFragmentViewModel","33-  isLoadingLiveData.value = false")
