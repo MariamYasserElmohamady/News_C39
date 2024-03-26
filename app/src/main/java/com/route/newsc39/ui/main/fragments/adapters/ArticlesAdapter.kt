@@ -19,7 +19,11 @@ class ArticlesAdapter(var articles: List<Article?>) : Adapter<ArticlesAdapter.Ar
     override fun getItemCount(): Int = articles.size
 
     override fun onBindViewHolder(holder: ArticlesViewHolder, position: Int) {
-        holder.bind(articles[position] )
+        val articleItem = articles[position]?:return
+        holder.bind(articleItem )
+        holder.binding.root.setOnClickListener {
+            onArticleClickListener?.onArticleClick(articleItem)
+        }
     }
 
     fun update(newList: List<Article?>){
@@ -38,5 +42,12 @@ class ArticlesAdapter(var articles: List<Article?>) : Adapter<ArticlesAdapter.Ar
                     .into(binding.newsImage)
             }
         }
+    }
+    private  var onArticleClickListener:OnArticleClickListener?=null
+    fun setArticleClickListener (listener :OnArticleClickListener){
+        onArticleClickListener=listener
+    }
+    fun interface OnArticleClickListener{
+        fun onArticleClick(article: Article?)
     }
 }

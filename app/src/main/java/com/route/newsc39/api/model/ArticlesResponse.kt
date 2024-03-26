@@ -1,6 +1,8 @@
 package com.route.newsc39.api.model
 
+import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.Parcelize
 
 data class ArticlesResponse(
 
@@ -19,6 +21,7 @@ data class ArticlesResponse(
     @field:SerializedName("message")
     val message: String? = null
 )
+@Parcelize
 
 data class Article(
 
@@ -45,4 +48,4 @@ data class Article(
 
     @field:SerializedName("content")
     val content: String? = null
-)
+):Parcelable

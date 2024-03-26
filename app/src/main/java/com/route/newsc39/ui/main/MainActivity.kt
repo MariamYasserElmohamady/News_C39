@@ -2,10 +2,9 @@ package com.route.newsc39.ui.main
 
 import android.os.Bundle
 import android.view.MenuItem
-import android.view.View
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.drawerlayout.widget.DrawerLayout.DrawerListener
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.route.newsc39.R
 import com.route.newsc39.databinding.ActivityMainBinding
@@ -17,7 +16,7 @@ import com.route.newsc39.ui.main.fragments.settings.SettingsFragment
 class MainActivity : AppCompatActivity() {
     lateinit var binding: ActivityMainBinding
     lateinit var categoriesFragment: CategoriesFragment
-    lateinit var newsFragment: NewsFragment
+    //lateinit var newsFragment: NewsFragment
     lateinit var actionBarDrawerToggle: ActionBarDrawerToggle
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,6 +52,36 @@ class MainActivity : AppCompatActivity() {
             binding.root.closeDrawers()
             return@setNavigationItemSelectedListener true
         }
+        
+        binding.icOpenSearchImv.setOnClickListener{
+            showSearchView(true)
+        }
+        binding.icCloseImv.setOnClickListener{
+            showSearchView(false)
+        }
+
+
+        binding.searchEdt
+            .setOnEditorActionListener { view, actionId, event ->
+                onSearchClickListener?.onSearchClick(view.text.toString())
+                true
+        }
+        binding.icSearchInImv.setOnClickListener {
+            onSearchClickListener?.onSearchClick(binding.searchEdt.text.toString())
+        }
+    }
+
+//    fun hideKeybord(view: View) {
+//        inputMethodManager.hideSoftInputFromWindow(
+//            view.windowToken,
+//            InputMethodManager.RESULT_UNCHANGED_SHOWN
+//        )
+//    }
+
+    private fun showSearchView(show: Boolean) {
+        binding.titleTv.isVisible=!show
+        binding.icOpenSearchImv.isVisible=!show
+        binding.searchViewCv.isVisible=show
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -78,6 +107,14 @@ class MainActivity : AppCompatActivity() {
                 .commit()
 
         }
+    }
+
+    private  var onSearchClickListener:OnSearchClickListener? = null
+    fun setOnSearchClickListener(listener: OnSearchClickListener){
+        onSearchClickListener =listener
+    }
+    fun interface OnSearchClickListener{
+       fun onSearchClick(query : String)
     }
 }
 

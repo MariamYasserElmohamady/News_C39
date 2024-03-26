@@ -9,12 +9,17 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.google.gson.Gson
+import com.route.newsc39.R
 import com.route.newsc39.api.ApiManager
 import com.route.newsc39.api.model.ArticlesResponse
+import com.route.newsc39.api.model.Constants
 import com.route.newsc39.api.model.Source
 import com.route.newsc39.api.model.SourcesResponse
 import com.route.newsc39.databinding.FragmentNewsBinding
+
+import com.route.newsc39.ui.main.MainActivity
 import com.route.newsc39.ui.main.fragments.adapters.ArticlesAdapter
+import com.route.newsc39.ui.main.fragments.articleDetails.ArticleDetailsFragment
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -30,6 +35,12 @@ class NewsFragment(val categoryId: String): Fragment(), OnTabSelectedListener {
     }
     lateinit var binding: FragmentNewsBinding
     var adapter = ArticlesAdapter(listOf())
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        (activity as MainActivity).binding.titleTv.text =categoryId
+        (activity as MainActivity).binding.icOpenSearchImv.isVisible=true
+
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,6 +50,7 @@ class NewsFragment(val categoryId: String): Fragment(), OnTabSelectedListener {
         binding = FragmentNewsBinding.inflate(inflater, container, false)
         return binding.root
     }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -52,37 +64,55 @@ class NewsFragment(val categoryId: String): Fragment(), OnTabSelectedListener {
             loadSources()
         }
         binding.tabLayout.addOnTabSelectedListener(this)
+       ( activity as MainActivity).setOnSearchClickListener{query->
+           loadArticlesByQuery(query)
+       }
+        adapter.setArticleClickListener{article->
+            val arguments =Bundle()
+            arguments.putParcelable(Constants.PASSED_ARTICLE,article)
+            val articleDetailsFragment =ArticleDetailsFragment()
+            articleDetailsFragment.arguments=arguments
+
+            parentFragmentManager
+                .beginTransaction()
+                .replace(R.id.fragmentContainer,articleDetailsFragment)
+                .addToBackStack("")
+                .commit()
+
+
+        }
+
     }
 
     private fun loadSources() {
-        changeLoaderVisiblity(true)
-        changeErrorVisiblity(false)
+        changeLoaderVisibility(true)
+        changeErrorVisibility(false)
         ApiManager.getWebServices().getSources(ApiManager.apiKey, categoryId)
             .enqueue(object : Callback<SourcesResponse> {
                 override fun onResponse(
                     call: Call<SourcesResponse>,
                     response: Response<SourcesResponse>
                 ) {
-                    changeLoaderVisiblity(false)
+                    changeLoaderVisibility(false)
                     if (response.isSuccessful) {
                         response.body()?.sources.let {
                             showTabs(it!!)
                         }
 
                     } else {
-                        changeErrorVisiblity(true)
-                        val response =
+                        changeErrorVisibility(true)
+                        val errorResponse =
                             Gson().fromJson(
                                 response.errorBody()?.string(),
                                 SourcesResponse::class.java
                             )
-                        changeErrorVisiblity(true, response.message ?: "Try again later")
+                        changeErrorVisibility(true, errorResponse.message ?: "Try again later")
                     }
                 }
 
                 override fun onFailure(call: Call<SourcesResponse>, t: Throwable) {
-                    changeLoaderVisiblity(false)
-                    changeErrorVisiblity(
+                    changeLoaderVisibility(false)
+                    changeErrorVisibility(
                         true,
                         t.localizedMessage ?: "Something went wrong please try again later"
                     )
@@ -101,14 +131,14 @@ class NewsFragment(val categoryId: String): Fragment(), OnTabSelectedListener {
 
     }
 
-    private fun changeErrorVisiblity(isVisible: Boolean, message: String = "") {
-        binding.errorView.root.isVisible = isVisible
-        if (isVisible) {
-            binding.errorView.errorTv.text = message
-        }
+    private fun changeErrorVisibility(isVisible: Boolean, message: String = "") {
+//        binding.errorView.root.isVisible = isVisible
+//        if (isVisible) {
+//            binding.errorView.errorTv.text = message
+//        }
     }
 
-    private fun changeLoaderVisiblity(isVisible: Boolean) {
+    private fun changeLoaderVisibility(isVisible: Boolean) {
         binding.loadingView.isVisible = isVisible
     }
 
@@ -129,6 +159,7 @@ class NewsFragment(val categoryId: String): Fragment(), OnTabSelectedListener {
     }
 
     private fun loadArticles(sourceId: String) {
+
         ApiManager.getWebServices().getArticles(
             ApiManager.apiKey,
             sourceId
@@ -137,25 +168,61 @@ class NewsFragment(val categoryId: String): Fragment(), OnTabSelectedListener {
                 call: Call<ArticlesResponse>,
                 response: Response<ArticlesResponse>
             ) {
+                changeLoaderVisibility(false)
                 if (response.isSuccessful && response.body()?.articles?.isNotEmpty() == true) {
                     adapter.update(response.body()?.articles!!)
                 } else {
-                    changeErrorVisiblity(true)
-                    val response =
+
+                    changeErrorVisibility(true)
+                    val errorResponse =
                         Gson().fromJson(
                             response.errorBody()?.string(),
                             ArticlesResponse::class.java
                         )
-                    changeErrorVisiblity(true, response.message ?: "Try again later")
+                    changeErrorVisibility(true, errorResponse.message ?: "Try again later")
                 }
             }
             override fun onFailure(call: Call<ArticlesResponse>, t: Throwable) {
-                changeLoaderVisiblity(false)
-                changeErrorVisiblity(
+                changeLoaderVisibility(false)
+                changeErrorVisibility(
                     true,
                     t.localizedMessage ?: "Something went wrong please try again later"
                 )
             }
         })
+    }
+
+    private fun loadArticlesByQuery(query:String){
+        ApiManager
+            .getWebServices()
+            .getArticlesByQuery(query=query)
+            .enqueue(object :Callback<ArticlesResponse>{
+                override fun onResponse(
+                    call: Call<ArticlesResponse>,
+                    response: Response<ArticlesResponse>
+                ) {
+                    changeLoaderVisibility(false)
+                    if (response.isSuccessful && response.body()?.articles?.isNotEmpty() ==true){
+                        adapter.update(response.body()?.articles!!)
+                    }else{
+                        changeErrorVisibility(true)
+                        val errorResponse =
+                            Gson().fromJson(
+                                response.errorBody()?.string(),
+                                ArticlesResponse::class.java
+                            )
+                        changeErrorVisibility(true, errorResponse.message ?: "Try again later")
+                    }
+                }
+
+                override fun onFailure(call: Call<ArticlesResponse>, t: Throwable) {
+                    changeLoaderVisibility(false)
+                    changeErrorVisibility(
+                        true,
+                        t.localizedMessage ?: "Something went wrong please try again later"
+                    )
+                }
+
+            })
     }
 }

@@ -16,8 +16,8 @@
             android:gravity="center"
 
             />
-        <Button
-            android:id="@+id/retryBtn"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/retry_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/retry"
