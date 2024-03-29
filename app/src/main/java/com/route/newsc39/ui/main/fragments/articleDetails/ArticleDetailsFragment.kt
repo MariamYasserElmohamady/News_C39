@@ -5,14 +5,23 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.route.newsc39.api.model.Article
 import com.route.newsc39.api.model.Constants
 import com.route.newsc39.databinding.FragmentArticleDetailsBinding
+import com.route.newsc39.ui.main.MainActivity
 
 class ArticleDetailsFragment :Fragment() {
     private lateinit var binding:FragmentArticleDetailsBinding
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        (activity as MainActivity).binding.titleTv.text =" "
+        (activity as MainActivity).binding.icOpenSearchImv.isVisible=false
+
+    }
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -38,6 +47,7 @@ class ArticleDetailsFragment :Fragment() {
         binding.articleTitleTv.text =article.title
         binding.articlePublishedAtTv.text =article.publishedAt
         binding.articleBodyTv.text =article.content
+        (activity as MainActivity).binding.titleTv.text =article.title
     }
 
     private fun getParcelable(arguments:Bundle):Article{
