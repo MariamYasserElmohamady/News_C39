@@ -12,7 +12,7 @@ import com.route.newsc39.api.model.Constants
 import com.route.newsc39.databinding.FragmentArticleDetailsBinding
 
 class ArticleDetailsFragment :Fragment() {
-    lateinit var binding:FragmentArticleDetailsBinding
+    private lateinit var binding:FragmentArticleDetailsBinding
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,

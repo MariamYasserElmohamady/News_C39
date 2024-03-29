@@ -24,7 +24,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class NewsFragment(val categoryId: String): Fragment(), OnTabSelectedListener {
+class NewsFragment(private val categoryId: String): Fragment(), OnTabSelectedListener {
 
     companion object{
 //        fun getInstance(category: Category): NewsFragment{
@@ -33,7 +33,7 @@ class NewsFragment(val categoryId: String): Fragment(), OnTabSelectedListener {
 //            return newsFragment
 //        }
     }
-    lateinit var binding: FragmentNewsBinding
+    private lateinit var binding: FragmentNewsBinding
     var adapter = ArticlesAdapter(listOf())
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,7 +64,8 @@ class NewsFragment(val categoryId: String): Fragment(), OnTabSelectedListener {
             loadSources()
         }
         binding.tabLayout.addOnTabSelectedListener(this)
-       ( activity as MainActivity).setOnSearchClickListener{query->
+
+        ( activity as MainActivity).setOnSearchClickListener{query->
            loadArticlesByQuery(query)
        }
         adapter.setArticleClickListener{article->
@@ -78,8 +79,6 @@ class NewsFragment(val categoryId: String): Fragment(), OnTabSelectedListener {
                 .replace(R.id.fragmentContainer,articleDetailsFragment)
                 .addToBackStack("")
                 .commit()
-
-
         }
 
     }

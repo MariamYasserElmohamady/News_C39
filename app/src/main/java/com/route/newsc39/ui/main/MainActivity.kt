@@ -64,11 +64,12 @@ class MainActivity : AppCompatActivity() {
         binding.searchEdt
             .setOnEditorActionListener { view, actionId, event ->
                 onSearchClickListener?.onSearchClick(view.text.toString())
+                view.text=""
                 true
         }
-        binding.icSearchInImv.setOnClickListener {
-            onSearchClickListener?.onSearchClick(binding.searchEdt.text.toString())
-        }
+//        binding.icSearchInImv.setOnClickListener {
+//            onSearchClickListener?.onSearchClick(binding.searchEdt.text.toString())
+//        }
     }
 
 //    fun hideKeybord(view: View) {
